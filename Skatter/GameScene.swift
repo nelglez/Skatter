@@ -10,7 +10,7 @@ import GameplayKit
 
 struct Collision {
     static let skater: UInt32 = 0x1 << 0
-    static let brick: UInt32 = 0x1 << 1
+    static let trash: UInt32 = 0x1 << 1
     static let gem: UInt32 = 0x1 << 2
 }
 
@@ -36,7 +36,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         physicsWorld.contactDelegate = self
         
         startGems()
-        
+        startTrash()
     }
     
     func createSidewalk() {
@@ -83,7 +83,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     
         player.physicsBody?.categoryBitMask = Collision.skater
         player.physicsBody?.collisionBitMask = 0
-        player.physicsBody?.contactTestBitMask = Collision.gem
+        player.physicsBody?.contactTestBitMask = Collision.gem | Collision.trash
         addChild(player)
     }
     
@@ -111,7 +111,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             // Add the new gem to the array of gems
         }
     
-    @objc func startGems() {
+    func startGems() {
     
         
         let create = SKAction.run { [unowned self] in
@@ -127,10 +127,51 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let repeatForever = SKAction.repeatForever(sequence)
         
         run(repeatForever)
-        
-        
-        
+ 
     }
+    
+    func spawnTrash() {
+      
+              // Greate a gem sprite and add it to the scene
+         let trash = SKSpriteNode(imageNamed: "trash")
+          
+        trash.position = CGPoint(x: frame.maxX + 10, y: trash.frame.height / 2.0)
+        trash.zPosition = 3
+       // trash.xScale = 1.5
+       // trash.yScale = 1.5
+        trash.name = "Trash"
+        trash.position.y = trash.frame.height / 2.0 + 74.0
+          addChild(trash)
+              
+        trash.physicsBody = SKPhysicsBody(rectangleOf: trash.size, center: trash.centerRect.origin)
+        trash.physicsBody?.categoryBitMask = Collision.trash
+        trash.physicsBody?.collisionBitMask = 0
+        trash.physicsBody?.contactTestBitMask = Collision.skater
+          
+        trash.physicsBody?.affectedByGravity = false
+        trash.physicsBody?.velocity = CGVector(dx: -400, dy: 0) //move along the x only
+        trash.physicsBody?.linearDamping = 0 //no friction
+              
+          }
+      
+      func startTrash() {
+      
+          
+          let create = SKAction.run { [unowned self] in
+              
+              
+              self.spawnTrash()
+             
+          }
+         
+          
+          let wait = SKAction.wait(forDuration: 5, withRange: 5)
+          let sequence = SKAction.sequence([create, wait])
+          let repeatForever = SKAction.repeatForever(sequence)
+          
+          run(repeatForever)
+   
+      }
     
     func touchDown(atPoint pos : CGPoint) {
        
@@ -145,9 +186,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        let jumpUpAction = SKAction.moveBy(x: 0, y: 70, duration: 0.2)
+        let jumpUpAction = SKAction.moveBy(x: 0, y: 100, duration: 0.2)
         // move down 20
-        let jumpDownAction = SKAction.moveBy(x: 0, y: -70, duration: 0.2)
+        let jumpDownAction = SKAction.moveBy(x: 0, y: -100, duration: 0.2)
         // sequence of move yup then down
         let jumpSequence = SKAction.sequence([jumpUpAction, jumpDownAction])
 
@@ -167,24 +208,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     
     override func update(_ currentTime: TimeInterval) {
-        if player.position.x < -400 {
-                   player.position.x = -400
-               } else if player.position.x > 400 {
-                   player.position.x = 400
-               }
-               
-               if player.position.y < -view!.frame.minY + 30{
-                   player.position.y = -view!.frame.minY + 30
-               } else if player.position.y > view!.frame.maxY - 30 {
-                   player.position.y = view!.frame.maxY - 30
-               }
-        
-        
-        
-//        let value = player.physicsBody?.velocity.dy ?? 0.001 * 0.001
-//        let rotate = SKAction.rotate(toAngle: value, duration: 0.1)
-//        player.run(rotate)
-        
+    
         for node in children {
             if node.position.x < -896 {
                 node.removeFromParent()
@@ -207,7 +231,12 @@ extension GameScene {
             let gemNode = contact.bodyA.categoryBitMask == Collision.gem ? contact.bodyA.node : contact.bodyB.node
 
             gemNode?.removeFromParent()
-           
+        case Collision.skater | Collision.trash:
+            print("Player and Trash have collided")
+            let playerNode = contact.bodyA.categoryBitMask == Collision.skater ? contact.bodyA.node : contact.bodyB.node
+
+            playerNode?.removeFromParent()
+            scene?.isPaused = true
         default:
             print("Some other contact occured")
         }
