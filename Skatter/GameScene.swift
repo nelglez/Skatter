@@ -11,14 +11,18 @@ import GameplayKit
 class GameScene: SKScene {
     
     let background = SKSpriteNode(imageNamed: "background")
+    let player = SKSpriteNode(imageNamed: "skater")
     
     
     override func didMove(to view: SKView) {
        
+        physicsWorld.gravity = CGVector(dx: 0.0, dy: -6.0)
+        
         background.position = CGPoint(x: frame.midX, y: frame.midY)
         addChild(background)
         
         createSidewalk()
+        createSkater()
     }
     
     func createSidewalk() {
@@ -43,6 +47,29 @@ class GameScene: SKScene {
             
             
         }
+    }
+    
+    func createSkater() {
+        
+        player.position = CGPoint(x: frame.midX / 4.0, y: player.frame.height / 2.0)
+        player.zPosition = 3
+        player.position.y = player.frame.height / 2.0 + 74.0
+                
+        player.zRotation = 0.0
+        player.physicsBody?.velocity = CGVector(dx: 0.0, dy: 0.0)
+        player.physicsBody?.angularVelocity = 0.0
+        
+        player.physicsBody = SKPhysicsBody(texture: player.texture!, size: player.texture!.size())
+        player.physicsBody?.isDynamic = true
+        player.physicsBody?.affectedByGravity = false
+        player.physicsBody?.density = 6.0
+        player.physicsBody?.allowsRotation = true
+        player.physicsBody?.angularDamping = 1.0
+                    
+       // player.physicsBody?.categoryBitMask = PhysicsCategory.skater
+       // player.physicsBody?.collisionBitMask = PhysicsCategory.brick
+       // player.physicsBody?.contactTestBitMask = PhysicsCategory.brick | PhysicsCategory.gem
+        addChild(player)
     }
     
     func touchDown(atPoint pos : CGPoint) {
