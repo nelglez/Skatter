@@ -27,9 +27,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
       }
     var scoreLabel = SKLabelNode(fontNamed: "AvenirNextCondensed-Bold")
    
+    let music = SKAudioNode(fileNamed: "game_loop.mp3")
+    let bonusSound = SKAction.playSoundFileNamed("bonus.wav", waitForCompletion: false)
     
     override func didMove(to view: SKView) {
        
+        addChild(music)
+        
         score = 0
         
         scoreLabel.fontColor = UIColor.black.withAlphaComponent(0.5)
@@ -187,17 +191,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
    
       }
     
-    func touchDown(atPoint pos : CGPoint) {
-       
-    }
-    
-    func touchMoved(toPoint pos : CGPoint) {
-       
-    }
-    
-    func touchUp(atPoint pos : CGPoint) {
-       
-    }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         let jumpUpAction = SKAction.moveBy(x: 0, y: 100, duration: 0.2)
@@ -208,16 +201,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         // make player run sequence
         player.run(jumpSequence)
-    }
-    
-   
-    
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        
-    }
-    
-    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { self.touchUp(atPoint: t.location(in: self)) }
     }
     
     
@@ -243,6 +226,7 @@ extension GameScene {
         case Collision.skater | Collision.gem:
             print("Player and gem have collided")
             let gemNode = contact.bodyA.categoryBitMask == Collision.gem ? contact.bodyA.node : contact.bodyB.node
+            run(bonusSound)
             score += 1
             gemNode?.removeFromParent()
         case Collision.skater | Collision.trash:
