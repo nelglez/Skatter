@@ -30,6 +30,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let music = SKAudioNode(fileNamed: "game_loop.mp3")
     let bonusSound = SKAction.playSoundFileNamed("bonus.wav", waitForCompletion: false)
     
+    let gameOverLogo = SKSpriteNode(imageNamed: "game-over")
+    
     override func didMove(to view: SKView) {
        
         addChild(music)
@@ -193,9 +195,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        let jumpUpAction = SKAction.moveBy(x: 0, y: 100, duration: 0.2)
+        let jumpUpAction = SKAction.moveBy(x: 0, y: 110, duration: 0.2)
         // move down 20
-        let jumpDownAction = SKAction.moveBy(x: 0, y: -100, duration: 0.2)
+        let jumpDownAction = SKAction.moveBy(x: 0, y: -110, duration: 0.2)
         // sequence of move yup then down
         let jumpSequence = SKAction.sequence([jumpUpAction, jumpDownAction])
 
@@ -235,6 +237,14 @@ extension GameScene {
 
             playerNode?.removeFromParent()
             scene?.isPaused = true
+            
+            gameOverLogo.position = CGPoint(x: frame.midX, y: frame.midY)
+            gameOverLogo.xScale = 0.5
+            gameOverLogo.xScale = 0.5
+            gameOverLogo.zPosition = 10
+            gameOverLogo.removeFromParent()
+            addChild(gameOverLogo)
+            
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 if let view = self.view {
