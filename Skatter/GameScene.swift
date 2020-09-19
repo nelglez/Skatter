@@ -23,6 +23,7 @@ class GameScene: SKScene {
         
         createSidewalk()
         createSkater()
+        spawnGem()
     }
     
     func createSidewalk() {
@@ -71,6 +72,24 @@ class GameScene: SKScene {
        // player.physicsBody?.contactTestBitMask = PhysicsCategory.brick | PhysicsCategory.gem
         addChild(player)
     }
+    
+    func spawnGem() {
+            // Greate a gem sprite and add it to the scene
+            let gem = SKSpriteNode(imageNamed: "gem")
+        
+        gem.position = CGPoint(x: frame.maxX + 10, y: gem.frame.height / 2.0)
+        gem.zPosition = 3
+        gem.position.y = gem.frame.height / 2.0 + 74.0
+        addChild(gem)
+            
+        gem.physicsBody = SKPhysicsBody(rectangleOf: gem.size, center: gem.centerRect.origin)
+         //   gem.physicsBody?.categoryBitMask = PhysicsCategory.gem
+        gem.physicsBody?.affectedByGravity = false
+        gem.physicsBody?.velocity = CGVector(dx: -400, dy: 0) //move along the x only
+        gem.physicsBody?.linearDamping = 0 //no friction
+            
+            // Add the new gem to the array of gems
+        }
     
     func touchDown(atPoint pos : CGPoint) {
        
