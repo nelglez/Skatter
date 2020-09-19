@@ -68,7 +68,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player.position = CGPoint(x: frame.midX / 4.0, y: player.frame.height / 2.0)
         player.zPosition = 3
         player.position.y = player.frame.height / 2.0 + 74.0
-                
+        player.name = "Skater"
+        
         player.zRotation = 0.0
         player.physicsBody?.velocity = CGVector(dx: 0.0, dy: 0.0)
         player.physicsBody?.angularVelocity = 0.0
@@ -91,8 +92,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             // Greate a gem sprite and add it to the scene
        let gem = SKSpriteNode(imageNamed: "gem")
         
-    gem.position = CGPoint(x: frame.maxX + 10, y: gem.frame.height / 2.0)
+        gem.position = CGPoint(x: frame.maxX + 10, y: gem.frame.height / 2.0)
         gem.zPosition = 3
+        gem.name = "Gem"
         gem.position.y = gem.frame.height / 2.0 + 74.0
         addChild(gem)
             
@@ -143,13 +145,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-       
+        let jumpUpAction = SKAction.moveBy(x: 0, y: 70, duration: 0.2)
+        // move down 20
+        let jumpDownAction = SKAction.moveBy(x: 0, y: -70, duration: 0.2)
+        // sequence of move yup then down
+        let jumpSequence = SKAction.sequence([jumpUpAction, jumpDownAction])
+
+        // make player run sequence
+        player.run(jumpSequence)
     }
     
    
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { self.touchUp(atPoint: t.location(in: self)) }
+        
     }
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -158,14 +167,37 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     
     override func update(_ currentTime: TimeInterval) {
-        // Called before each frame is rendered
+        if player.position.x < -400 {
+                   player.position.x = -400
+               } else if player.position.x > 400 {
+                   player.position.x = 400
+               }
+               
+               if player.position.y < -view!.frame.minY + 30{
+                   player.position.y = -view!.frame.minY + 30
+               } else if player.position.y > view!.frame.maxY - 30 {
+                   player.position.y = view!.frame.maxY - 30
+               }
+        
+        
+        
+//        let value = player.physicsBody?.velocity.dy ?? 0.001 * 0.001
+//        let rotate = SKAction.rotate(toAngle: value, duration: 0.1)
+//        player.run(rotate)
+        
+        for node in children {
+            if node.position.x < -896 {
+                node.removeFromParent()
+            }
+        }
+        
     }
 }
 
 extension GameScene {
     
     func didBegin(_ contact: SKPhysicsContact) {
-        print("didBeginContact entered for \(String(describing: contact.bodyA.node!.name)) and \(String(describing: contact.bodyB.node!.name))")
+        print("didBeginContact entered for \(String(describing: contact.bodyA.node?.name)) and \(String(describing: contact.bodyB.node?.name))")
         
         let contactMask = contact.bodyA.categoryBitMask | contact.bodyB.categoryBitMask
 
@@ -174,7 +206,7 @@ extension GameScene {
             print("Player and gem have collided")
             let gemNode = contact.bodyA.categoryBitMask == Collision.gem ? contact.bodyA.node : contact.bodyB.node
 
-            gemNode!.removeFromParent()
+            gemNode?.removeFromParent()
            
         default:
             print("Some other contact occured")
