@@ -19,11 +19,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     let background = SKSpriteNode(imageNamed: "background")
     let player = SKSpriteNode(imageNamed: "skater")
-    
-    let nc = NotificationCenter.default
+
+    var score = 0 {
+          didSet {
+           scoreLabel.text = "SCORE: \(score)"
+          }
+      }
+    var scoreLabel = SKLabelNode(fontNamed: "AvenirNextCondensed-Bold")
+   
     
     override func didMove(to view: SKView) {
        
+        score = 0
+        
+        scoreLabel.fontColor = UIColor.black.withAlphaComponent(0.5)
+        scoreLabel.zPosition = 4
+        scoreLabel.position.y = frame.maxY - 50
+        scoreLabel.position.x = frame.midX
+        addChild(scoreLabel)
+        
         physicsWorld.gravity = CGVector(dx: 0.0, dy: -6.0)
         
         background.position = CGPoint(x: frame.midX, y: frame.midY)
@@ -229,7 +243,7 @@ extension GameScene {
         case Collision.skater | Collision.gem:
             print("Player and gem have collided")
             let gemNode = contact.bodyA.categoryBitMask == Collision.gem ? contact.bodyA.node : contact.bodyB.node
-
+            score += 1
             gemNode?.removeFromParent()
         case Collision.skater | Collision.trash:
             print("Player and Trash have collided")
@@ -237,6 +251,18 @@ extension GameScene {
 
             playerNode?.removeFromParent()
             scene?.isPaused = true
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                if let view = self.view {
+                    //create a new scene from GameScene.sks
+                    let scene = GameScene(size: view.frame.size)
+                    //make it stretch to fill all available space
+                    scene.scaleMode = .aspectFill
+                    //present it immediately
+                    self.view?.presentScene(scene)
+                }
+            }
+                
         default:
             print("Some other contact occured")
         }
