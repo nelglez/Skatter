@@ -20,6 +20,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let background = SKSpriteNode(imageNamed: "background")
     let player = SKSpriteNode(imageNamed: "skater")
     
+    let nc = NotificationCenter.default
     
     override func didMove(to view: SKView) {
        
@@ -30,9 +31,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         createSidewalk()
         createSkater()
-        spawnGem()
+        
         
         physicsWorld.contactDelegate = self
+        
+        startGems()
+        
     }
     
     func createSidewalk() {
@@ -82,11 +86,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(player)
     }
     
-    func spawnGem() {
+  func spawnGem() {
+    
             // Greate a gem sprite and add it to the scene
-            let gem = SKSpriteNode(imageNamed: "gem")
+       let gem = SKSpriteNode(imageNamed: "gem")
         
-        gem.position = CGPoint(x: frame.maxX + 10, y: gem.frame.height / 2.0)
+    gem.position = CGPoint(x: frame.maxX + 10, y: gem.frame.height / 2.0)
         gem.zPosition = 3
         gem.position.y = gem.frame.height / 2.0 + 74.0
         addChild(gem)
@@ -100,8 +105,30 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         gem.physicsBody?.velocity = CGVector(dx: -400, dy: 0) //move along the x only
         gem.physicsBody?.linearDamping = 0 //no friction
             
+    
             // Add the new gem to the array of gems
         }
+    
+    @objc func startGems() {
+    
+        
+        let create = SKAction.run { [unowned self] in
+            
+            
+            self.spawnGem() //That new method calls createRocks(), waits three seconds, calls createRocks() again, waits again, and so on, forever.
+           
+        }
+       
+        
+        let wait = SKAction.wait(forDuration: 2,withRange: 5)
+        let sequence = SKAction.sequence([create, wait])
+        let repeatForever = SKAction.repeatForever(sequence)
+        
+        run(repeatForever)
+        
+        
+        
+    }
     
     func touchDown(atPoint pos : CGPoint) {
        
