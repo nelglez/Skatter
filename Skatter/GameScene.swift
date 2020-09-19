@@ -8,7 +8,14 @@
 import SpriteKit
 import GameplayKit
 
-class GameScene: SKScene {
+struct Collision {
+    static let skater: UInt32 = 0x1 << 0
+    static let brick: UInt32 = 0x1 << 1
+    static let gem: UInt32 = 0x1 << 2
+}
+
+
+class GameScene: SKScene, SKPhysicsContactDelegate {
     
     let background = SKSpriteNode(imageNamed: "background")
     let player = SKSpriteNode(imageNamed: "skater")
@@ -24,6 +31,8 @@ class GameScene: SKScene {
         createSidewalk()
         createSkater()
         spawnGem()
+        
+        physicsWorld.contactDelegate = self
     }
     
     func createSidewalk() {
@@ -67,9 +76,9 @@ class GameScene: SKScene {
         player.physicsBody?.allowsRotation = true
         player.physicsBody?.angularDamping = 1.0
                     
-       // player.physicsBody?.categoryBitMask = PhysicsCategory.skater
-       // player.physicsBody?.collisionBitMask = PhysicsCategory.brick
-       // player.physicsBody?.contactTestBitMask = PhysicsCategory.brick | PhysicsCategory.gem
+        player.physicsBody?.categoryBitMask = Collision.skater
+        player.physicsBody?.collisionBitMask = 0
+        player.physicsBody?.contactTestBitMask = Collision.gem
         addChild(player)
     }
     
@@ -83,7 +92,10 @@ class GameScene: SKScene {
         addChild(gem)
             
         gem.physicsBody = SKPhysicsBody(rectangleOf: gem.size, center: gem.centerRect.origin)
-         //   gem.physicsBody?.categoryBitMask = PhysicsCategory.gem
+        gem.physicsBody?.categoryBitMask = Collision.gem
+        gem.physicsBody?.collisionBitMask = 0
+        gem.physicsBody?.contactTestBitMask = Collision.skater
+        
         gem.physicsBody?.affectedByGravity = false
         gem.physicsBody?.velocity = CGVector(dx: -400, dy: 0) //move along the x only
         gem.physicsBody?.linearDamping = 0 //no friction
@@ -120,5 +132,26 @@ class GameScene: SKScene {
     
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
+    }
+}
+
+extension GameScene {
+    
+    func didBegin(_ contact: SKPhysicsContact) {
+        print("didBeginContact entered for \(String(describing: contact.bodyA.node!.name)) and \(String(describing: contact.bodyB.node!.name))")
+        
+        let contactMask = contact.bodyA.categoryBitMask | contact.bodyB.categoryBitMask
+
+        switch contactMask {
+        case Collision.skater | Collision.gem:
+            print("Player and gem have collided")
+            let gemNode = contact.bodyA.categoryBitMask == Collision.gem ? contact.bodyA.node : contact.bodyB.node
+
+            gemNode!.removeFromParent()
+           
+        default:
+            print("Some other contact occured")
+        }
+
     }
 }
